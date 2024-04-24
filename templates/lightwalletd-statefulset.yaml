@@ -1,0 +1,107 @@
+{{- if .Values.lightwalletd.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.lightwalletd.name }}
+spec:
+  serviceName: {{ .Values.lightwalletd.name }}-service
+  replicas: {{ .Values.lightwalletd.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.lightwalletd.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.lightwalletd.name }}
+    spec:
+      initContainers:
+      - name: init-perms
+        image: busybox:{{ .Values.global.images.busybox.tag }}@sha256:{{ .Values.global.images.busybox.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - chown 2002 /srv/lightwalletd/db_volume
+        volumeMounts:
+        - name: litewalletd-data
+          mountPath: /srv/lightwalletd/db_volume
+      {{- if .Values.lightwalletd.initSnapshot.enabled }}
+      - name: restore-snapshot
+        image: alpine:{{ .Values.global.images.alpine.tag }}@sha256:{{ .Values.global.images.alpine.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            if [ -z "$(ls -A /data | grep -v '^lost+found$')" ]; then
+              echo "Volume is empty. Downloading and extracting snapshot...";
+              wget -qO- "{{ .Values.lightwalletd.initSnapshot.url }}" | tar --strip-components=1 -xf - -C /data
+              echo "Download and extraction complete.";
+            else
+              echo "Volume is not empty. Skipping download and extraction.";
+            fi
+            chown -R 2002 /data
+        volumeMounts:
+        - name: litewalletd-data
+          mountPath: /data
+      {{- end }}
+      - name: init-rpc
+        image: busybox:{{ .Values.global.images.busybox.tag }}@sha256:{{ .Values.global.images.busybox.hash }}
+        command: ['sh', '-c', "until nc -zv {{ .Values.lightwalletd.rpcService }}:8232; do echo waiting for rpc; sleep 2; done"]
+      containers:
+      - name: lightwalletd
+        image: {{ .Values.lightwalletd.image.repository }}:{{ .Values.lightwalletd.image.tag }}@sha256:{{ .Values.lightwalletd.image.hash }}
+        imagePullPolicy: {{ .Values.lightwalletd.image.pullPolicy }}
+        command: ["lightwalletd"]
+        args:
+          - --grpc-bind-addr
+          - 0.0.0.0:9067
+          # TLS is terminated by Traefik, unencrypted traffic stays within the cluster
+          - --no-tls-very-insecure
+          - --zcash-conf-path 
+          - /srv/lightwalletd/conf/zcash.conf
+          - --data-dir
+          - /srv/lightwalletd/db_volume
+          - --log-file
+          - /dev/stdout
+          {{- with .Values.lightwalletd.additionalArgs }}
+            {{- toYaml . | nindent 10 }}
+          {{- end}}
+        ports:
+        - containerPort: 9067
+          name: grpc
+        volumeMounts:
+        - name: litewalletd-data
+          mountPath: /srv/lightwalletd/db_volume
+        - name: litewalletd-conf
+          mountPath: /srv/lightwalletd/conf
+        readinessProbe:
+          tcpSocket:
+            port: 9067
+          # TODO: lightwalletd does not yet support grpc's health check feature
+          # grpc:
+          #   port: 9067
+          # initialDelaySeconds: 10
+        resources:
+          requests:
+            cpu: {{ .Values.lightwalletd.requests.cpu }}
+            memory: {{ .Values.lightwalletd.requests.memory }}
+          {{- if .Values.lightwalletd.limits.memory }}
+          limits:
+            memory: {{ .Values.lightwalletd.limits.memory }}
+          {{- end }}
+      volumes:
+      - name: litewalletd-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.lightwalletd.volumes.data.claimName | default (printf "%s-data" (.Values.lightwalletd.name)) }}
+      - name: litewalletd-conf
+        configMap:
+          name: {{ .Values.lightwalletd.name }}-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.lightwalletd.volumes.data.claimName | default (printf "%s-data" (.Values.lightwalletd.name)) }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.lightwalletd.volumes.data.size }}
+{{- end }}

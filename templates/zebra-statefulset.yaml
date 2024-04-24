@@ -1,0 +1,112 @@
+{{- if .Values.zebra.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.zebra.name }}
+spec:
+  serviceName: {{ .Values.zebra.name }}-service
+  replicas: {{ .Values.zebra.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.zebra.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.zebra.name }}
+    spec:
+      initContainers:
+      {{- if .Values.zebra.initSnapshot.enabled }}
+      - name: restore-snapshot
+        image: alpine:{{ .Values.global.images.alpine.tag }}@sha256:{{ .Values.global.images.alpine.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            if [ -z "$(ls -A /data | grep -v '^lost+found$')" ]; then
+              echo "Volume is empty. Downloading and extracting snapshot...";
+              wget -qO- "{{ .Values.zebra.initSnapshot.url }}" | tar --strip-components=1 -xvf - -C /data
+              echo "Download and extraction complete.";
+            else
+              echo "Volume is not empty. Skipping download and extraction.";
+            fi
+            chown -R 2001 /data
+        volumeMounts:
+        - name: zebra-data
+          mountPath: /data
+      {{- else }}
+      - name: set-permissions
+        image: busybox:{{ .Values.global.images.busybox.tag }}@sha256:{{ .Values.global.images.busybox.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - chown -R 2001 /data
+        volumeMounts:
+        - name: zebra-data
+          mountPath: /data
+      {{- end }}
+      containers:
+      - name: zebra
+        image: {{ .Values.zebra.image.repository }}:{{ .Values.zebra.image.tag }}@sha256:{{ .Values.zebra.image.hash }}
+        imagePullPolicy: {{ .Values.zebra.image.pullPolicy }}
+        env:
+          - name: NETWORK
+            {{- if .Values.zebra.testnet }}
+            value: "Testnet"
+            {{- else }}
+            value: "Mainnet"
+            {{- end }}
+          - name: ZEBRA_CONF_PATH
+            value: "/etc/zebrad/zebrad.toml"
+          - name: ZEBRA_CACHED_STATE_DIR
+            value: "/var/cache/zebrad-cache"
+          - name: RUST_LOG
+            value: "info"
+          - name: LOG_COLOR
+            value: "false"
+          - name: ZEBRA_LISTEN_ADDR
+            value: "0.0.0.0"
+          - name: ZEBRA_CHECKPOINT_SYNC
+            value: "true"
+          - name: METRICS_ENDPOINT_ADDR
+            value: "0.0.0.0"
+          - name: METRICS_ENDPOINT_PORT
+            value: "9999"
+          - name: TRACING_ENDPOINT_ADDR
+            value: "0.0.0.0"
+          - name: TRACING_ENDPOINT_PORT
+            value: "3000"
+          - name: RPC_LISTEN_ADDR
+            value: "0.0.0.0"
+          - name: RPC_PORT
+            value: "8232"
+        {{- with .Values.zebra.additionalEnv }}
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: 8232
+          name: zebra-rpc
+        - containerPort: 8233
+          name: zebra-p2p
+        volumeMounts:
+        - name: {{ .Values.zebra.name }}-data
+          mountPath: /var/cache/zebrad-cache
+        resources:
+          requests:
+            cpu: {{ .Values.zebra.requests.cpu }}
+            memory: {{ .Values.zebra.requests.memory }}
+          {{- if .Values.zebra.limits }}
+          limits:
+            {{- if .Values.zebra.limits.memory }}
+            memory: {{ .Values.zebra.limits.memory }}
+            {{- end }}
+          {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.zebra.name }}-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.zebra.volumes.data.size }}
+      {{- if .Values.zebra.storageClassName }}
+      storageClassName: {{ .Values.zebra.storageClassName }}
+      {{- end }}
+{{- end }}

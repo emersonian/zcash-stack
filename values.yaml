@@ -1,0 +1,100 @@
+ingress:
+  enabled: true
+  domains: []
+  sniCatchallEnabled: false
+
+zebra:
+  enabled: false
+  name: zebra
+  testnet: false
+  image:
+    repository: zfnd/zebra
+    tag: v1.6.1
+    hash: 639154fe2584633821cc434f96dceab2b9047969478c651ca96ab981ca025007
+    pullPolicy: IfNotPresent
+  replicas: 1
+  initSnapshot:
+    enabled: false
+    url: https://link.storjshare.io/s/jv62jmwhs3n6c7usknlv4ux4lbza/nodedumps/zec/zebra-2024-03-25.tar?download=1
+  additionalEnv: {}
+  volumes:
+    data:
+      size: 400Gi
+  service:
+    type: ClusterIP
+  requests: {}
+  # requests:
+  #   cpu: 2
+  #   memory: 4Gi
+  # limits:
+  #   memory: 16Gi
+
+zcashd:
+  enabled: false
+  name: zcashd
+  testnet: false
+  image:
+    repository: electriccoinco/zcashd
+    tag: v5.9.0
+    hash: 859be28b91592c4765783ccfea947145b3cc08902ee71ae52ef9205eaabe0194
+    pullPolicy: IfNotPresent
+  replicas: 1
+  initSnapshot:
+    enabled: false
+    url: https://link.storjshare.io/s/jx5wylg5q6hyg2myyah5eldbjs7q/nodedumps/zec/zcashd-2024-03-31.tar?download=1
+  reindex: false
+  nodes:
+   - mainnet.z.cash
+  additionalArgs: []
+  volumes:
+    data:
+      size: 400Gi
+  service:
+    type: ClusterIP
+  requests: {}
+  # requests:
+  #   cpu: 1
+  #   memory: 1.5Gi
+  limits:
+    memory: 6Gi
+
+rpc:
+  credentials:
+    rpcUser: 100ZECS
+    rpcPassword: h3hqw3eRHcoqwirhOCQWHEr2OC
+
+lightwalletd:
+  enabled: true
+  name: lightwalletd
+  rpcService: zcashd
+  image:
+    repository: electriccoinco/lightwalletd
+    tag: v0.4.17
+    hash: 906942c30d84a017e76ce72c4d59787aa5208b87a4af1b724e700f8524ab4fd1
+    pullPolicy: IfNotPresent
+  replicas: 1
+  initSnapshot:
+    enabled: false
+    url: https://link.storjshare.io/s/jvfegr7l7gwgcsvdml5lazlnypdq/nodedumps/zec/lwd/2024-03-26.tar?download=1
+  additionalArgs: []
+  volumes:
+    data:
+      size: 40Gi
+  service:
+    type: ClusterIP
+  requests: {}
+  # requests:
+  #   cpu: 0.5
+  #   memory: 512Mi
+  limits:
+    memory: 3Gi
+
+global:
+  # TODO: minimum volume size (Vultr is 40Gi for HDD, 10Gi for SSD), backport this to Thorchain and Maya
+  images:
+    busybox:
+      tag: latest
+      hash: 4be429a5fbb2e71ae7958bfa558bc637cf3a61baf40a708cb8fff532b39e52d0
+    alpine:
+      tag: latest
+      hash: c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b

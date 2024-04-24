@@ -1,0 +1,14 @@
+{{- if .Values.lightwalletd.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.lightwalletd.name }}
+spec:
+  type: {{ .Values.lightwalletd.service.type }}
+  selector:
+    app: {{ .Values.lightwalletd.name }}
+  ports:
+    - protocol: TCP
+      port: 9067
+      targetPort: 9067
+{{- end }}

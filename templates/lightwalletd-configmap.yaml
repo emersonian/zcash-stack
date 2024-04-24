@@ -1,0 +1,11 @@
+{{- if .Values.lightwalletd.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.lightwalletd.name }}-config
+data:
+  zcash.conf: |
+    rpcbind={{ .Values.lightwalletd.rpcService }}
+    rpcuser={{ .Values.rpc.credentials.rpcUser }}
+    rpcpassword={{ .Values.rpc.credentials.rpcPassword }}
+{{- end }}

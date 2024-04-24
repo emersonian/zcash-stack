@@ -1,0 +1,15 @@
+{{- if .Values.zcashd.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.zcashd.name }}
+spec:
+  type: {{ .Values.zcashd.service.type }}
+  selector:
+    app: {{ .Values.zcashd.name }}
+  ports:
+    - port: 8232
+      targetPort: 8232
+      protocol: TCP
+      name: rpc
+{{- end }}

@@ -1,0 +1,100 @@
+{{- if .Values.zcashd.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.zcashd.name }}
+spec:
+  serviceName: {{ .Values.zcashd.name }}-service
+  replicas: {{ .Values.zcashd.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.zcashd.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.zcashd.name }}
+    spec:
+      initContainers:
+      {{- if .Values.zcashd.initSnapshot.enabled }}
+      - name: restore-snapshot
+        image: alpine:{{ .Values.global.images.alpine.tag }}@sha256:{{ .Values.global.images.alpine.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            if [ -z "$(ls -A /data | grep -v '^lost+found$')" ]; then
+              echo "Volume is empty. Downloading and extracting snapshot...";
+              wget -qO- "{{  .Values.zcashd.initSnapshot.url }}" | tar --strip-components=1 -xvf - -C /data
+              echo "Download and extraction complete.";
+            else
+              echo "Volume is not empty. Skipping download and extraction.";
+            fi
+            chown -R 2001 /data
+        volumeMounts:
+        - name: zcash-data
+          mountPath: /data
+      {{- else }}
+      - name: set-permissions
+        image: busybox:{{ .Values.global.images.busybox.tag }}@sha256:{{ .Values.global.images.busybox.hash }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - chown -R 2001 /data
+        volumeMounts:
+        - name: zcash-data
+          mountPath: /data
+      {{- end }}
+      containers:
+      - name: zcashd
+        image: {{ .Values.zcashd.image.repository }}:{{ .Values.zcashd.image.tag }}@sha256:{{ .Values.zcashd.image.hash }}
+        imagePullPolicy: {{ .Values.zcashd.image.pullPolicy }}
+        command: ["zcashd"]
+        args:
+          - -conf=/srv/zcashd/conf/zcashd.conf
+          - -printtoconsole
+          {{- range $index, $value := .Values.zcashd.nodes }}
+          - -addnode={{ $value }}
+          {{- end }}
+          {{- if .Values.zcashd.reindex }}
+          - -reindex
+          {{- end }}
+          {{- with .Values.zcashd.additionalArgs }}
+            {{- toYaml . | nindent 10 }}
+          {{- end}}
+        ports:
+        - containerPort: 8232
+          name: zcashd-rpc
+        - containerPort: 8233
+          name: zcashd-p2p
+        volumeMounts:
+        - name: zcash-data
+          mountPath: /srv/zcashd/.zcash
+        - name: zcash-config
+          mountPath: /srv/zcashd/conf
+        resources:
+          requests:
+            cpu: {{ .Values.zcashd.requests.cpu }}
+            memory: {{ .Values.zcashd.requests.memory }}
+          {{- if .Values.zcashd.limits }}
+          limits:
+            {{- if .Values.zcashd.limits.memory }}
+            memory: {{ .Values.zcashd.limits.memory }}
+            {{- end }}
+          {{- end }}
+      volumes:
+      - name: zcash-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
+      - name: zcash-config
+        configMap:
+          name: {{ .Values.zcashd.name }}-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.zcashd.volumes.data.size }}
+{{- end }}
