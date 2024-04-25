@@ -21,7 +21,7 @@ spec:
         args:
           - chown 2002 /srv/lightwalletd/db_volume
         volumeMounts:
-        - name: litewalletd-data
+        - name: data
           mountPath: /srv/lightwalletd/db_volume
       {{- if .Values.lightwalletd.initSnapshot.enabled }}
       - name: restore-snapshot
@@ -38,7 +38,7 @@ spec:
             fi
             chown -R 2002 /data
         volumeMounts:
-        - name: litewalletd-data
+        - name: data
           mountPath: /data
       {{- end }}
       - name: init-rpc
@@ -67,9 +67,9 @@ spec:
         - containerPort: 9067
           name: grpc
         volumeMounts:
-        - name: litewalletd-data
+        - name: data
           mountPath: /srv/lightwalletd/db_volume
-        - name: litewalletd-conf
+        - name: config
           mountPath: /srv/lightwalletd/conf
         readinessProbe:
           tcpSocket:
@@ -87,21 +87,16 @@ spec:
             memory: {{ .Values.lightwalletd.limits.memory }}
           {{- end }}
       volumes:
-      - name: litewalletd-data
-        persistentVolumeClaim:
-          claimName: {{ .Values.lightwalletd.volumes.data.claimName | default (printf "%s-data" (.Values.lightwalletd.name)) }}
-      - name: litewalletd-conf
+      - name: config
         configMap:
           name: {{ .Values.lightwalletd.name }}-config
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.lightwalletd.volumes.data.claimName | default (printf "%s-data" (.Values.lightwalletd.name)) }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.lightwalletd.volumes.data.size }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.lightwalletd.volumes.data.size }}
 {{- end }}

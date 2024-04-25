@@ -14,12 +14,13 @@ All of the "zec.rocks" Lightwalletd servers are provisioned using this.
 
 1. Traefik is required to auto-provision LetsEncrypt SSL certificates.
 
-1a. Edit ```install-traefik.sh``` to specify your real email address.
+    a. Edit ```install-traefik.sh``` to specify your real email address.
 
-2b. Install Traefik on your cluster:
+    b. Install Traefik on your cluster:
 
 ```
-sh ./install-traefik.sh
+chmod +x install-traefik.sh
+./install-traefik.sh
 ```
 
 2. Edit an example values file from the ```./examples``` folder. Specify the domain name that you intend to host a lightwalletd instance on. View the ```values.yaml``` file to see all of the configuration options possible.

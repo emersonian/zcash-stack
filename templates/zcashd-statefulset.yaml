@@ -30,7 +30,7 @@ spec:
             fi
             chown -R 2001 /data
         volumeMounts:
-        - name: zcash-data
+        - name: data
           mountPath: /data
       {{- else }}
       - name: set-permissions
@@ -39,7 +39,7 @@ spec:
         args:
           - chown -R 2001 /data
         volumeMounts:
-        - name: zcash-data
+        - name: data
           mountPath: /data
       {{- end }}
       containers:
@@ -65,7 +65,7 @@ spec:
         - containerPort: 8233
           name: zcashd-p2p
         volumeMounts:
-        - name: zcash-data
+        - name: data
           mountPath: /srv/zcashd/.zcash
         - name: zcash-config
           mountPath: /srv/zcashd/conf
@@ -86,15 +86,13 @@ spec:
       - name: zcash-config
         configMap:
           name: {{ .Values.zcashd.name }}-config
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.zcashd.volumes.data.size }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.zcashd.volumes.data.size }}
 {{- end }}
