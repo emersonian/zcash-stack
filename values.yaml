@@ -35,8 +35,8 @@ zcashd:
   testnet: false
   image:
     repository: electriccoinco/zcashd
-    tag: v5.9.1
-    hash: 4c2f781792a8c671eef4ad55f4e645b75924e70716a312396878388f58652881
+    tag: v5.10.0
+    hash: cc946b8dcba9791a83f54aee2c2304ce4995487fbcb03d06e965b0dd58162baf
     pullPolicy: IfNotPresent
   replicas: 1
   initSnapshot:
