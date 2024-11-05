@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  zcash-stack:
+  - apiVersion: v2
+    created: "2024-11-05T16:58:00.754801-06:00"
+    description: Zcash node (Zebra, Zcashd) with lightwalletd
+    digest: 3ac6eb305f6f481f0881558e5b1617094326eaf629b93c66f5ae8eb2097e4cd9
+    name: zcash-stack
+    type: application
+    urls:
+    - zcash-stack-0.0.2.tgz
+    version: 0.0.2
+generated: "2024-11-05T16:58:00.754808-06:00"
