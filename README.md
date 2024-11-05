@@ -1,3 +1,5 @@
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/zcash)](https://artifacthub.io/packages/search?repo=zcash)
+
 # Zcash Stack Helm Chart
 
 This chart enables the reliable deployment of Zcash infrastructure on Kubernetes.
@@ -29,24 +31,41 @@ chmod +x install-traefik.sh
 
 2. Edit an example values file from the ```./examples``` folder. Specify the domain name that you intend to host a lightwalletd instance on. View the ```values.yaml``` file to see all of the configuration options possible.
 
-3. Install the chart on your cluster: (execute from this project's directory, specify your own yaml file if you did not modify an example in-place)
+3. Add the zcash-stack Helm repository to your environment:
 
 ```
-helm install zcash . -f examples/zebra-mainnet.yaml
+helm repo add zcash https://emersonian.github.io/zcash-stack
+helm repo update
+```
+
+4. Install the chart on your cluster: (specify your own yaml file if you did not modify an example in-place)
+
+```
+helm install zcash zcash/zcash-stack -f examples/zebra-mainnet.yaml
 ```
 
 ### Upgrading
 
 We highly recommend installing the "helm-diff" plugin.
 
-Verify changes before you upgrade:
+Pull the latest release of the zcash-stack Helm chart:
 ```
-KUBECONFIG=~/.kube/config-eu1 helm diff upgrade zec-eu1 ~/dev/zcash-stack -f ./values-eu1.yaml
+helm repo update
+```
+
+Confirm the name of your node's Helm deployment:
+```
+KUBECONFIG=~/.kube/config-eu1 helm list
+```
+
+Verify changes before you upgrade: (in this example, the chart was installed as "zec-eu1")
+```
+KUBECONFIG=~/.kube/config-eu1 helm diff upgrade zec-eu1 zcash/zcash-stack -f ./values-eu1.yaml
 ```
 
 Then apply the upgrade:
 ```
-KUBECONFIG=~/.kube/config-eu1 helm upgrade zec-eu1 ~/dev/zcash-stack -f ./values-eu1.yaml
+KUBECONFIG=~/.kube/config-eu1 helm upgrade zec-eu1 zcash/zcash-stack -f ./values-eu1.yaml
 ```
 
 ### Kubernetes Cheat Sheet
@@ -69,6 +88,9 @@ kubectl exec statefulset/zebra -ti -- bash
 kubectl rollout restart statefulset/lightwalletd
 kubectl rollout restart statefulset/zebra
 kubectl rollout restart statefulset/zcashd
+
+# View the public IPs provisioned by Traefik
+kubectl get service -n traefik
 ```
 
 ## Works in progress
