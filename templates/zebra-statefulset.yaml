@@ -30,7 +30,7 @@ spec:
             fi
             chown -R 2001 /data
         volumeMounts:
-        - name: zebra-data
+        - name: {{ .Values.zebra.name }}-data
           mountPath: /data
       {{- else }}
       - name: set-permissions
@@ -39,47 +39,14 @@ spec:
         args:
           - chown -R 2001 /data
         volumeMounts:
-        - name: zebra-data
+        - name: {{ .Values.zebra.name }}-data
           mountPath: /data
       {{- end }}
       containers:
       - name: zebra
         image: {{ .Values.zebra.image.repository }}:{{ .Values.zebra.image.tag }}@sha256:{{ .Values.zebra.image.hash }}
         imagePullPolicy: {{ .Values.zebra.image.pullPolicy }}
-        env:
-          - name: NETWORK
-            {{- if .Values.zebra.testnet }}
-            value: "Testnet"
-            {{- else }}
-            value: "Mainnet"
-            {{- end }}
-          - name: ZEBRA_CONF_PATH
-            value: "/etc/zebrad/zebrad.toml"
-          - name: ZEBRA_CACHED_STATE_DIR
-            value: "/var/cache/zebrad-cache"
-          - name: RUST_LOG
-            value: "info"
-          - name: LOG_COLOR
-            value: "false"
-          - name: ZEBRA_LISTEN_ADDR
-            value: "0.0.0.0"
-          - name: ZEBRA_CHECKPOINT_SYNC
-            value: "true"
-          - name: METRICS_ENDPOINT_ADDR
-            value: "0.0.0.0"
-          - name: METRICS_ENDPOINT_PORT
-            value: "9999"
-          - name: TRACING_ENDPOINT_ADDR
-            value: "0.0.0.0"
-          - name: TRACING_ENDPOINT_PORT
-            value: "3000"
-          - name: RPC_LISTEN_ADDR
-            value: "0.0.0.0"
-          - name: RPC_PORT
-            value: "8232"
-        {{- with .Values.zebra.additionalEnv }}
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
+        command: ["zebrad", "-c", "/etc/zebrad/zebrad.toml"]
         ports:
         - containerPort: 8232
           name: zebra-rpc
@@ -88,6 +55,8 @@ spec:
         volumeMounts:
         - name: {{ .Values.zebra.name }}-data
           mountPath: /var/cache/zebrad-cache
+        - name: zebra-config
+          mountPath: /etc/zebrad/
         resources:
           requests:
             cpu: {{ .Values.zebra.requests.cpu }}
@@ -98,6 +67,10 @@ spec:
             memory: {{ .Values.zebra.limits.memory }}
             {{- end }}
           {{- end }}
+      volumes:
+      - name: zebra-config
+        configMap:
+          name: {{ .Values.zebra.name }}-config
   volumeClaimTemplates:
   - metadata:
       name: {{ .Values.zebra.name }}-data

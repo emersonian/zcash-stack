@@ -9,8 +9,8 @@ zebra:
   testnet: false
   image:
     repository: zfnd/zebra
-    tag: v1.9.0
-    hash: a1ae9e51e25d629dd09e9f59729c3a1736b806b301b8e3c52b80987680a1c13b
+    tag: v2.0.1
+    hash: 2daab3567d02c5b836918f69acaa8f6af2a0eab20e74396709c55eb1647bd4f1
     pullPolicy: IfNotPresent
   replicas: 1
   initSnapshot:
@@ -35,8 +35,8 @@ zcashd:
   testnet: false
   image:
     repository: electriccoinco/zcashd
-    tag: v5.10.0
-    hash: cc946b8dcba9791a83f54aee2c2304ce4995487fbcb03d06e965b0dd58162baf
+    tag: v6.0.0
+    hash: cd3d6d3576c31efd6e4c1b017beac5585d236aefb27b6cb90a9f1142e94337eb
     pullPolicy: IfNotPresent
   replicas: 1
   initSnapshot:
