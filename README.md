@@ -1,8 +1,12 @@
 # Zcash Stack Helm Chart
 
-This chart is a work in progress and has only been tested on Vultr Kubernetes Engine as of writing.
+This chart enables the reliable deployment of Zcash infrastructure on Kubernetes.
 
-All of the "zec.rocks" Lightwalletd servers are provisioned using this.
+We run this using K3s on self-hosted hardware, and also on Vultr Kubernetes Engine.
+
+All of the "zec.rocks" lightwalletd servers are provisioned using this chart, and are load balanced using HAProxy on Fly.io. Refer to the [zecrocks repository](https://github.com/emersonian/zecrocks) for the source code to our load balancing approach.
+
+This project is funded by [Zcash Community Grants](https://zcashcommunitygrants.org/). Progress updates are posted to a [thread on the Zcash Community Forum](https://forum.zcashcommunity.com/t/rfp-zcash-lightwalletd-infrastructure-development-and-maintenance/47080).
 
 ## Prerequisites
 
