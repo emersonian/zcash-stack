@@ -1,7 +1,4 @@
-repository:
-  name: zcash-stack
-  displayName: Zcash Stack
-  description: Deploy Zcash infrastructure on Kubernetes: Zebra, Zcashd, and Lightwalletd.
-  type: helm
-  url: https://github.com/emersonian/zcash-stack
-
+repositoryID: a19c73af-48e7-4039-bfc4-af6353cae760
+owners:
+  - name: emersonian
+    email: e@emersonhall.com
