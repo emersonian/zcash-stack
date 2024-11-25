@@ -17,6 +17,6 @@ entries:
     name: zcash-stack
     type: application
     urls:
-    - zcash-stack-0.0.2.tgz
+    - https://github.com/emersonian/zcash-stack/releases/download/zcash-stack-0.0.2/zcash-stack-0.0.2.tgz
     version: 0.0.2
 generated: "2024-11-25T20:48:55.846670881Z"
