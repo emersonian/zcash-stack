@@ -31,7 +31,7 @@ spec:
             fi
             chown -R 2001 /data
         volumeMounts:
-        - name: data
+        - name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
           mountPath: /data
       {{- else }}
       - name: set-permissions
@@ -40,7 +40,7 @@ spec:
         args:
           - chown -R 2001 /data
         volumeMounts:
-        - name: data
+        - name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
           mountPath: /data
       {{- end }}
       containers:
@@ -66,7 +66,7 @@ spec:
         - containerPort: 8233
           name: zcashd-p2p
         volumeMounts:
-        - name: data
+        - name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
           mountPath: /srv/zcashd/.zcash
         - name: zcash-config
           mountPath: /srv/zcashd/conf
@@ -81,19 +81,19 @@ spec:
             {{- end }}
           {{- end }}
       volumes:
-      - name: zcash-data
-        persistentVolumeClaim:
-          claimName: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
       - name: zcash-config
         configMap:
           name: {{ .Values.zcashd.name }}-config
   volumeClaimTemplates:
   - metadata:
-      name: data
+      name: {{ .Values.zcashd.volumes.data.claimName | default (printf "%s-data" (.Values.zcashd.name)) }}
     spec:
       accessModes:
         - ReadWriteOnce
       resources:
         requests:
           storage: {{ .Values.zcashd.volumes.data.size }}
+      {{- if .Values.zcashd.storageClassName }}
+      storageClassName: {{ .Values.zcashd.storageClassName }}
+      {{- end }}
 {{- end }}

@@ -4,7 +4,7 @@
 
 This chart enables the reliable deployment of Zcash infrastructure on Kubernetes.
 
-We run this using K3s on self-hosted hardware, and also on Vultr Kubernetes Engine.
+We run this using K3s on self-hosted hardware and on Vultr Kubernetes Engine. This chart is also tested on GKE Autopilot as an integration test.
 
 All of the "zec.rocks" lightwalletd servers are provisioned using this chart, and are load balanced using HAProxy on Fly.io. Refer to the [zecrocks repository](https://github.com/emersonian/zecrocks) for the source code to our load balancing approach.
 

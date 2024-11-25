@@ -54,12 +54,11 @@ zcashd:
       size: 400Gi
   service:
     type: ClusterIP
-  requests: {}
-  # requests:
-  #   cpu: 1
-  #   memory: 1.5Gi
+  requests:
+    cpu: 1
+    memory: 1.5Gi
   limits:
-    memory: 6Gi
+    memory: 10Gi
 
 rpc:
   credentials:
@@ -85,10 +84,9 @@ lightwalletd:
       size: 40Gi
   service:
     type: ClusterIP
-  requests: {}
-  # requests:
-  #   cpu: 0.5
-  #   memory: 512Mi
+  requests:
+    cpu: 0.5
+    memory: 512Mi
   limits:
     memory: 3Gi
 
