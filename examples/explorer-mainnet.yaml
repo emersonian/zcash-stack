@@ -1,0 +1,25 @@
+ingress:
+  enabled: false
+
+zcashd:
+  enabled: true
+  explorer: true
+  lightwalletd: false
+  initSnapshot:
+    enabled: true
+
+explorer:
+  enabled: true
+  env:
+    # NOTE: Override this if you want cookies to store sensitive information.
+    # Generate it with Elixir and Phoenix installed: "mix phx.gen.secret"
+    SECRET_KEY_BASE: "BmorTF7SW6jAofTt4RKs9exrK3vOdETuS8uF6UYwfRN2KgGDfTomUp2d898uyZEe"
+
+lightwalletd:
+  enabled: false
+
+rpc:
+  credentials:
+    rpcUser: change_this_usernmae
+    rpcPassword: zhange_zhis_zassword
+

@@ -1,0 +1,45 @@
+{{- if .Values.explorer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.explorer.name }}
+spec:
+  replicas: {{ .Values.explorer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.explorer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.explorer.name }}
+    spec:
+      containers:
+        - name: explorer
+          image: {{ .Values.explorer.image.repository }}:{{ .Values.explorer.image.tag }}@sha256:{{ .Values.explorer.image.hash }}
+          imagePullPolicy: {{ .Values.explorer.image.pullPolicy }}
+          ports:
+            - containerPort: 4000
+              name: explorer-http
+          env:
+            - name: EXPLORER_HOSTNAME
+              value: "{{ .Values.explorer.hostname }}"
+            - name: ZCASHD_HOSTNAME
+              value: "{{ .Values.zcashd.name }}"
+            - name: ZCASHD_PORT
+              value: "8232"
+            - name: ZCASHD_USERNAME
+              value: "{{ .Values.rpc.credentials.rpcUser }}"
+            - name: ZCASHD_PASSWORD
+              value: "{{ .Values.rpc.credentials.rpcPassword }}"
+          {{- range $key, $value := .Values.explorer.env }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+          {{- end }}
+          resources:
+            limits:
+              cpu: {{ .Values.explorer.resources.limits.cpu }}
+              memory: {{ .Values.explorer.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.explorer.resources.requests.cpu }}
+              memory: {{ .Values.explorer.resources.requests.memory }}
+{{- end }}

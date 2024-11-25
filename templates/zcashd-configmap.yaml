@@ -6,7 +6,6 @@ metadata:
 data:
   zcashd.conf: |
     txindex=1
-    lightwalletd=1
     experimentalfeatures=1
     rpcuser={{ .Values.rpc.credentials.rpcUser }}
     rpcpassword={{ .Values.rpc.credentials.rpcPassword }}
@@ -14,5 +13,11 @@ data:
     rpcallowip=0.0.0.0/0
     {{- if .Values.zcashd.testnet }}
     testnet=1
+    {{- end }}
+    {{- if .Values.zcashd.lightwalletd }}
+    lightwalletd=1
+    {{- end }}
+    {{- if .Values.zcashd.explorer }}
+    insightexplorer=1
     {{- end }}
 {{- end }}

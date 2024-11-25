@@ -42,7 +42,10 @@ zcashd:
   initSnapshot:
     enabled: false
     url: https://link.storjshare.io/s/jx5wylg5q6hyg2myyah5eldbjs7q/nodedumps/zec/zcashd-2024-03-31.tar?download=1
+    explorer_url: https://link.storjshare.io/s/jvyxajyevhmuyzsjlobsmv5enguq/nodedumps/zec/zcashd-explorer-2024-11-20.tar?download=1
   reindex: false
+  lightwalletd: true
+  explorer: false
   nodes:
    - mainnet.z.cash
   additionalArgs: []
@@ -88,6 +91,34 @@ lightwalletd:
   #   memory: 512Mi
   limits:
     memory: 3Gi
+
+explorer:
+  enabled: false
+  name: explorer
+  replicas: 1
+  image:
+    repository: emersonian/zcash-explorer
+    tag: v0.0.5
+    hash: a509e56edbf4469e73355aac7bcaf99ccd2f42cbc1cfeb23bd7d8cbc1190406c
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 4000
+  resources:
+    limits:
+      cpu: "1"
+      memory: "3072Mi"
+    requests:
+      cpu: "0.1"
+      memory: "512Mi"
+  env:
+    # NOTE: Override this if you want cookies to store sensitive information.
+    # Generate it with Elixir and Phoenix installed: "mix phx.gen.secret"
+    SECRET_KEY_BASE: 552Ean5DQvRgWpbO/xR4HADdPkNz30mKICmkzuqWUvp+2e1NZderMWVA/v6KkcfJ
+    EXPLORER_SCHEME: https
+    EXPLORER_PORT: "4000"
+    ZCASH_NETWORK: mainnet
+    zcash_network: mainnet
 
 global:
   # TODO: minimum volume size (Vultr is 40Gi for HDD, 10Gi for SSD), backport this to Thorchain and Maya

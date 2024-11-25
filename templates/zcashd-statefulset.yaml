@@ -21,9 +21,10 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
           - |
+            SNAPSHOT_URL="{{- if .Values.zcashd.explorer }}{{ .Values.zcashd.initSnapshot.explorer_url }}{{- else }}{{ .Values.zcashd.initSnapshot.url }}{{- end }}"
             if [ -z "$(ls -A /data | grep -v '^lost+found$')" ]; then
               echo "Volume is empty. Downloading and extracting snapshot...";
-              wget -qO- "{{  .Values.zcashd.initSnapshot.url }}" | tar --strip-components=1 -xvf - -C /data
+              wget -qO- "$SNAPSHOT_URL" | tar --strip-components=1 -xvf - -C /data
               echo "Download and extraction complete.";
             else
               echo "Volume is not empty. Skipping download and extraction.";

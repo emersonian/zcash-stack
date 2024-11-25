@@ -1,0 +1,15 @@
+{{- if .Values.explorer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.explorer.name }}
+spec:
+  type: {{ .Values.explorer.service.type }}
+  selector:
+    app: {{ .Values.explorer.name }}
+  ports:
+    - port: {{ .Values.explorer.service.port }}
+      targetPort: explorer-http
+      protocol: TCP
+      name: rpc
+{{- end }}
