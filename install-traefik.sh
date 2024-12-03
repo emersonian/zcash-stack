@@ -2,7 +2,7 @@
 # Note: Vultr's minimum volume size on magnetic storage is 40Gi.
 # Adjust below if you are not using Vultr, a very small volume is fine for storing the SSL certs.
 
-helm upgrade --install traefik traefik/traefik --namespace=traefik --create-namespace -f <(echo '
+helm upgrade --install traefik traefik/traefik --namespace=traefik --create-namespace --version=27.0.2 -f <(echo '
 certResolvers:
   letsencrypt:
     email: CHANGE_TO_YOUR_EMAIL@email.domain
