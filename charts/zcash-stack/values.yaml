@@ -96,8 +96,8 @@ explorer:
   replicas: 1
   image:
     repository: emersonian/zcash-explorer
-    tag: v0.0.5
-    hash: a509e56edbf4469e73355aac7bcaf99ccd2f42cbc1cfeb23bd7d8cbc1190406c
+    tag: v0.0.6
+    hash: ff583282563a566c09d004cd4bdf2f30edd32497a3a98eec40df1da130a69df9
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
